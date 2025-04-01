@@ -1,6 +1,9 @@
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import path from 'path';
+import { seedPlans } from './plans';
+import { seedServices } from './services';
+import { seedLocations } from './locations';
 
 // Function to get database connection
 export async function getDb() {
@@ -22,18 +25,28 @@ async function initializeDb(db: any) {
     const tableInfo = await db.all(`SELECT name FROM sqlite_master WHERE type='table'`);
     for (const table of tableInfo) {
       if (table.name === 'subscriptions') {
-        // Check if subscriptions table has a user_id column
+        // Check if subscriptions table has the required columns
         const columns = await db.all(`PRAGMA table_info(subscriptions)`);
-        if (!columns.some(c => c.name === 'user_id')) {
+        const hasUserId = columns.some((c: {name: string}) => c.name === 'user_id');
+        const hasPaymentMethod = columns.some((c: {name: string}) => c.name === 'payment_method');
+        const hasCreatedAt = columns.some((c: {name: string}) => c.name === 'created_at');
+        
+        if (!hasUserId || !hasPaymentMethod || !hasCreatedAt) {
           // Drop the table if it has the incorrect schema
           console.log('Dropping outdated subscriptions table');
           await db.exec(`DROP TABLE subscriptions`);
         }
       }
       if (table.name === 'service_requests') {
-        // Check if service_requests table has a user_id column
+        // Check if service_requests table has the required columns
         const columns = await db.all(`PRAGMA table_info(service_requests)`);
-        if (!columns.some(c => c.name === 'user_id')) {
+        const hasUserId = columns.some((c: {name: string}) => c.name === 'user_id');
+        const hasDescription = columns.some((c: {name: string}) => c.name === 'description');
+        const hasPreferredDate = columns.some((c: {name: string}) => c.name === 'preferred_date');
+        const hasPreferredTime = columns.some((c: {name: string}) => c.name === 'preferred_time');
+        const hasAddress = columns.some((c: {name: string}) => c.name === 'address');
+        
+        if (!hasUserId || !hasDescription || !hasPreferredDate || !hasPreferredTime || !hasAddress) {
           // Drop the table if it has the incorrect schema
           console.log('Dropping outdated service_requests table');
           await db.exec(`DROP TABLE service_requests`);
@@ -98,6 +111,8 @@ async function initializeDb(db: any) {
       start_date TEXT DEFAULT CURRENT_TIMESTAMP,
       end_date TEXT,
       status TEXT NOT NULL DEFAULT 'active',
+      payment_method TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users (id),
       FOREIGN KEY (plan_id) REFERENCES plans (id)
     );
@@ -106,9 +121,11 @@ async function initializeDb(db: any) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
       service_id INTEGER NOT NULL,
-      requested_date TEXT,
+      description TEXT,
+      preferred_date TEXT,
+      preferred_time TEXT,
+      address TEXT,
       status TEXT NOT NULL DEFAULT 'pending',
-      notes TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users (id),
       FOREIGN KEY (service_id) REFERENCES services (id)
@@ -127,6 +144,37 @@ async function initializeDb(db: any) {
       FOREIGN KEY (subscription_id) REFERENCES subscriptions (id)
     );
   `);
+
+  // Seed sample data if tables are empty
+  await seedSampleData(db);
+}
+
+// Function to seed sample data if tables are empty
+async function seedSampleData(db: any) {
+  try {
+    // Check if plans table is empty
+    const plansCount = await db.get('SELECT COUNT(*) as count FROM plans');
+    if (plansCount.count === 0) {
+      console.log('Seeding plans data...');
+      await seedPlans(db);
+    }
+    
+    // Check if services table is empty
+    const servicesCount = await db.get('SELECT COUNT(*) as count FROM services');
+    if (servicesCount.count === 0) {
+      console.log('Seeding services data...');
+      await seedServices(db);
+    }
+    
+    // Check if locations table is empty
+    const locationsCount = await db.get('SELECT COUNT(*) as count FROM locations');
+    if (locationsCount.count === 0) {
+      console.log('Seeding locations data...');
+      await seedLocations(db);
+    }
+  } catch (error) {
+    console.error('Error seeding sample data:', error);
+  }
 }
 
 // Function to close database connection

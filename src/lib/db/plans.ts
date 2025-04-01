@@ -203,4 +203,82 @@ export async function getPlanById(id: number): Promise<Plan | undefined> {
   } finally {
     await closeDb(db);
   }
+}
+
+// Function to seed plans data
+export async function seedPlans(db: any) {
+  try {
+    // Seed plans data
+    const plans = [
+      {
+        name: 'Basic',
+        description: 'Essential care for your air conditioning system',
+        price: 99,
+        billing_cycle: 'monthly',
+        popular: false,
+        features: [
+          '2 regular maintenance visits per year',
+          'Filter cleaning and replacement',
+          'System performance check',
+          'Basic system cleaning',
+          'Email support',
+          '10% discount on repairs'
+        ]
+      },
+      {
+        name: 'Standard',
+        description: 'Complete maintenance coverage for worry-free comfort',
+        price: 199,
+        billing_cycle: 'monthly',
+        popular: true,
+        features: [
+          '3 maintenance visits per year',
+          'Deep cleaning service',
+          'All Basic plan features',
+          'Priority scheduling',
+          '24/7 phone support',
+          '15% discount on repairs',
+          'Free refrigerant top-up (if needed)'
+        ]
+      },
+      {
+        name: 'Premium',
+        description: 'Comprehensive protection for multiple AC units',
+        price: 299,
+        billing_cycle: 'monthly',
+        popular: false,
+        features: [
+          '4 maintenance visits per year',
+          'Coverage for up to 3 AC units',
+          'All Standard plan features',
+          'Emergency service within 4 hours',
+          'Annual deep cleaning service',
+          '25% discount on repairs',
+          'Free minor parts replacement',
+          'Extended warranty on repairs',
+          'Multiple units coverage'
+        ]
+      }
+    ];
+    
+    // Insert seed data for plans with features directly in the plans table
+    for (const plan of plans) {
+      await db.run(`
+        INSERT INTO plans (name, description, price, billing_cycle, isPopular, features)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `, [
+        plan.name, 
+        plan.description, 
+        plan.price, 
+        plan.billing_cycle, 
+        plan.popular ? 1 : 0,
+        JSON.stringify(plan.features)
+      ]);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error seeding plans data:', error);
+    return false;
+  }
 } 

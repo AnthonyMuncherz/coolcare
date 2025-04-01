@@ -165,4 +165,64 @@ export async function getLocationById(id: number): Promise<Location | undefined>
   } finally {
     await closeDb(db);
   }
+}
+
+export async function seedLocations(db: any) {
+  try {
+    // Seed locations data
+    const locations = [
+      {
+        name: 'CoolCare Headquarters',
+        address: 'No. 123, Jalan Ampang, 50450 Kuala Lumpur, Malaysia',
+        phone: '+60 3-1234 5678',
+        email: 'kl@coolcare.my',
+        business_hours: 'Monday-Friday: 9:00 AM - 6:00 PM, Saturday: 9:00 AM - 1:00 PM',
+        latitude: 3.159510,
+        longitude: 101.715510,
+        is_head_office: true
+      },
+      {
+        name: 'CoolCare Petaling Jaya',
+        address: 'Unit 5, Ground Floor, Jaya One, 72A Jalan Universiti, 46200 Petaling Jaya, Selangor',
+        phone: '+60 3-7967 1234',
+        email: 'pj@coolcare.my',
+        business_hours: 'Monday-Friday: 9:00 AM - 6:00 PM, Saturday: 9:00 AM - 1:00 PM',
+        latitude: 3.118470,
+        longitude: 101.635880,
+        is_head_office: false
+      },
+      {
+        name: 'CoolCare Johor Bahru',
+        address: '65, Jalan Ibrahim, Bandar Johor Bahru, 80000 Johor Bahru, Johor',
+        phone: '+60 7-223 4567',
+        email: 'jb@coolcare.my',
+        business_hours: 'Monday-Friday: 9:00 AM - 6:00 PM, Saturday: 9:00 AM - 1:00 PM',
+        latitude: 1.462910,
+        longitude: 103.760530,
+        is_head_office: false
+      }
+    ];
+    
+    // Insert seed data
+    for (const location of locations) {
+      await db.run(`
+        INSERT INTO locations (name, address, phone, email, business_hours, latitude, longitude, is_head_office)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        location.name,
+        location.address,
+        location.phone,
+        location.email,
+        location.business_hours,
+        location.latitude,
+        location.longitude,
+        location.is_head_office ? 1 : 0
+      ]);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error seeding locations data:', error);
+    return false;
+  }
 } 
