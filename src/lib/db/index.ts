@@ -52,6 +52,18 @@ async function initializeDb(db: any) {
           await db.exec(`DROP TABLE service_requests`);
         }
       }
+      
+      // Check if plans table has incorrect pricing (monthly vs yearly)
+      if (table.name === 'plans') {
+        const basicPlan = await db.get(`SELECT price, billing_cycle FROM plans WHERE name = 'Basic' LIMIT 1`);
+        
+        // If basic plan exists and has incorrect pricing (99 instead of 899) or billing cycle (monthly instead of year)
+        if (basicPlan && (basicPlan.price < 800 || basicPlan.billing_cycle !== 'year')) {
+          console.log('Dropping plans and plan_features tables to fix pricing');
+          await db.exec(`DROP TABLE IF EXISTS plan_features`);
+          await db.exec(`DROP TABLE IF EXISTS plans`);
+        }
+      }
     }
   } catch (error) {
     console.error('Error checking existing tables:', error);

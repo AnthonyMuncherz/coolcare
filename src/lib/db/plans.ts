@@ -213,8 +213,8 @@ export async function seedPlans(db: any) {
       {
         name: 'Basic',
         description: 'Essential care for your air conditioning system',
-        price: 99,
-        billing_cycle: 'monthly',
+        price: 899,
+        billing_cycle: 'year',
         popular: false,
         features: [
           '2 regular maintenance visits per year',
@@ -228,8 +228,8 @@ export async function seedPlans(db: any) {
       {
         name: 'Standard',
         description: 'Complete maintenance coverage for worry-free comfort',
-        price: 199,
-        billing_cycle: 'monthly',
+        price: 1499,
+        billing_cycle: 'year',
         popular: true,
         features: [
           '3 maintenance visits per year',
@@ -244,8 +244,8 @@ export async function seedPlans(db: any) {
       {
         name: 'Premium',
         description: 'Comprehensive protection for multiple AC units',
-        price: 299,
-        billing_cycle: 'monthly',
+        price: 2499,
+        billing_cycle: 'year',
         popular: false,
         features: [
           '4 maintenance visits per year',
@@ -255,25 +255,50 @@ export async function seedPlans(db: any) {
           'Annual deep cleaning service',
           '25% discount on repairs',
           'Free minor parts replacement',
-          'Extended warranty on repairs',
-          'Multiple units coverage'
+          'Extended warranty on repairs'
+        ]
+      },
+      {
+        name: 'Business',
+        description: 'Tailored solutions for commercial properties',
+        price: 3999,
+        billing_cycle: 'year',
+        popular: false,
+        features: [
+          'Customized maintenance schedule',
+          'Coverage for multiple AC units',
+          'Dedicated account manager',
+          'Priority emergency service',
+          'Annual performance optimization',
+          'Detailed service reports',
+          'Staff training on basic maintenance',
+          '30% discount on all services'
         ]
       }
     ];
     
-    // Insert seed data for plans with features directly in the plans table
+    // Insert seed data for plans
     for (const plan of plans) {
-      await db.run(`
-        INSERT INTO plans (name, description, price, billing_cycle, isPopular, features)
-        VALUES (?, ?, ?, ?, ?, ?)
+      const result = await db.run(`
+        INSERT INTO plans (name, description, price, billing_cycle, popular)
+        VALUES (?, ?, ?, ?, ?)
       `, [
         plan.name, 
         plan.description, 
         plan.price, 
         plan.billing_cycle, 
-        plan.popular ? 1 : 0,
-        JSON.stringify(plan.features)
+        plan.popular ? 1 : 0
       ]);
+      
+      const planId = result.lastID;
+      
+      // Insert features for this plan
+      for (const feature of plan.features) {
+        await db.run(`
+          INSERT INTO plan_features (plan_id, feature)
+          VALUES (?, ?)
+        `, [planId, feature]);
+      }
     }
     
     return true;
