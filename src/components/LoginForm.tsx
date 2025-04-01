@@ -54,7 +54,7 @@ export default function LoginForm() {
       const data = await response.json();
       
       if (data.success) {
-        // Redirect to dashboard on successful login
+        // Redirect to dashboard - both technicians and regular users use the same dashboard now
         router.push('/dashboard');
       } else {
         setSubmissionError(data.message || 'Failed to log in');

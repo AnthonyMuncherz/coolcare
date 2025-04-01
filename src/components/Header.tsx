@@ -9,6 +9,7 @@ interface User {
   id: number;
   name: string;
   email: string;
+  role: string;
 }
 
 export default function Header() {
@@ -80,22 +81,32 @@ export default function Header() {
           {!loading && (
             <>
               {user ? (
-                <Link href="/dashboard" className="text-sm font-semibold leading-6 text-gray-900 hover:text-blue-600">
-                  Dashboard
-                </Link>
+                <div className="flex items-center space-x-4">
+                  <Link 
+                    href="/dashboard" 
+                    className="text-sm font-semibold leading-6 text-gray-900 hover:text-blue-600"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link 
+                    href="/request-service" 
+                    className="text-sm font-semibold leading-6 text-gray-900 hover:text-blue-600"
+                  >
+                    Request Service
+                  </Link>
+                </div>
               ) : (
-                <Link href="/login" className="text-sm font-semibold leading-6 text-gray-900 hover:text-blue-600">
-                  Log in
-                </Link>
+                <div className="flex items-center space-x-4">
+                  <Link href="/login" className="text-sm font-semibold leading-6 text-gray-900 hover:text-blue-600">
+                    Log in
+                  </Link>
+                  <Link href="/signup" className="text-sm font-semibold leading-6 text-gray-900 hover:text-blue-600">
+                    Sign up
+                  </Link>
+                </div>
               )}
             </>
           )}
-          <Link 
-            href={user ? "/dashboard/service-requests/new" : "/signup"} 
-            className="rounded-md bg-blue-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-          >
-            {user ? "Request Service" : "Get started"}
-          </Link>
         </div>
       </nav>
       {/* Mobile menu */}
