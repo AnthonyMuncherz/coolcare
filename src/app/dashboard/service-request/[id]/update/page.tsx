@@ -28,7 +28,8 @@ export default async function UpdateServiceRequestPage({ params }: UpdateService
   }
   
   // Process params after an async operation
-  const id = params.id;
+  const resolvedParams = await Promise.resolve(params);
+  const id = resolvedParams.id;
   const requestId = parseInt(id, 10);
   
   if (isNaN(requestId)) {

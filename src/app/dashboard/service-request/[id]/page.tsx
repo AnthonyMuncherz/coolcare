@@ -25,7 +25,8 @@ export default async function ServiceRequestDetailPage({ params }: ServiceReques
   const user = await requireAuth();
   
   // Process params after an async operation
-  const id = params.id;
+  const resolvedParams = await Promise.resolve(params);
+  const id = resolvedParams.id;
   const requestId = parseInt(id, 10);
   
   if (isNaN(requestId)) {

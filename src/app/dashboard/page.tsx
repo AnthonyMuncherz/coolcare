@@ -23,9 +23,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
   // Get user service requests if they're a regular user
   const serviceRequests = user.role !== 'technician' ? await getUserServiceRequests(user.id) : [];
   
-  // Extract sort parameters
-  const sortBy = typeof searchParams.sort === 'string' ? searchParams.sort : 'date';
-  const sortOrder = typeof searchParams.order === 'string' ? searchParams.order : 'asc';
+  // Extract sort parameters - properly await them in Next.js 15
+  const sortParams = await Promise.resolve(searchParams);
+  const sortBy = typeof sortParams.sort === 'string' ? sortParams.sort : 'date';
+  const sortOrder = typeof sortParams.order === 'string' ? sortParams.order : 'asc';
   
   return (
     <div className="min-h-screen flex flex-col">
