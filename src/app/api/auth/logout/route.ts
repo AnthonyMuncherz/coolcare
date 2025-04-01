@@ -3,7 +3,7 @@ import { logoutUser } from '@/lib/auth';
 
 export async function POST() {
   try {
-    const result = logoutUser();
+    const result = await logoutUser();
     
     if (result.success) {
       return NextResponse.json(
