@@ -8,16 +8,18 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import UpdateServiceRequestForm from '@/components/UpdateServiceRequestForm';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Update Service Request - CoolCare',
   description: 'Update the status and details of a service request',
 };
 
-type Props = {
+interface UpdateServiceRequestPageProps {
   params: { id: string };
-};
+}
 
-export default async function UpdateServiceRequestPage({ params }: Props) {
+export default async function UpdateServiceRequestPage({ params }: UpdateServiceRequestPageProps) {
   // Check if user is authenticated and is a technician
   const user = await requireAuth();
   
@@ -25,8 +27,9 @@ export default async function UpdateServiceRequestPage({ params }: Props) {
     redirect('/dashboard');
   }
   
-  // Get service request details - safely accessing params
-  const requestId = parseInt(params.id);
+  // Process params after an async operation
+  const id = params.id;
+  const requestId = parseInt(id, 10);
   
   if (isNaN(requestId)) {
     return notFound();
@@ -178,6 +181,7 @@ export default async function UpdateServiceRequestPage({ params }: Props) {
                       <UpdateServiceRequestForm 
                         requestId={serviceRequest.id} 
                         currentStatus={serviceRequest.status}
+                        currentNotes={serviceRequest.technician_notes || ''}
                       />
                     </div>
                   </div>

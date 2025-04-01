@@ -1,24 +1,31 @@
 import { Metadata } from 'next';
-import { requireAuth, getUserSubscription } from '@/lib/auth';
+import { requireAuth, getUserSubscription, getUserServiceRequests } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import DashboardSidebar from '@/components/DashboardSidebar';
-import SubscriptionStatus from '@/components/SubscriptionStatus';
-import ServiceRequestsOverview from '@/components/ServiceRequestsOverview';
-import QuickActions from '@/components/QuickActions';
+import Link from 'next/link';
+import { format } from 'date-fns';
+import { getTechnicianServiceRequests, getAllServiceRequests } from '@/lib/technician';
 
 export const metadata: Metadata = {
   title: 'Dashboard - CoolCare',
   description: 'Welcome to your CoolCare dashboard',
 };
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
   // Check if user is authenticated
   const user = await requireAuth();
   
   // Get user subscription if they're a regular user
   const subscription = user.role !== 'technician' ? await getUserSubscription(user.id) : null;
+  
+  // Get user service requests if they're a regular user
+  const serviceRequests = user.role !== 'technician' ? await getUserServiceRequests(user.id) : [];
+  
+  // Extract sort parameters
+  const sortBy = typeof searchParams.sort === 'string' ? searchParams.sort : 'date';
+  const sortOrder = typeof searchParams.order === 'string' ? searchParams.order : 'asc';
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -39,9 +46,9 @@ export default async function DashboardPage() {
               {/* Main content */}
               <div className="flex-1 space-y-6">
                 {user.role === 'technician' ? (
-                  <TechnicianDashboardContent />
+                  <TechnicianDashboardContent sortBy={sortBy as string} sortOrder={sortOrder as string} />
                 ) : (
-                  <RegularUserDashboardContent user={user} subscription={subscription} />
+                  <RegularUserDashboardContent user={user} subscription={subscription} serviceRequests={serviceRequests} />
                 )}
               </div>
             </div>
@@ -55,7 +62,21 @@ export default async function DashboardPage() {
 }
 
 // Content for technician dashboard
-function TechnicianDashboardContent() {
+async function TechnicianDashboardContent({ sortBy = 'date', sortOrder = 'asc' }: { sortBy: string, sortOrder: string }) {
+  // Fetch service requests from database
+  const serviceRequests = await getAllServiceRequests(sortBy, sortOrder);
+  
+  // Count requests by status
+  const pendingCount = serviceRequests.filter(req => req.status === 'pending').length;
+  const inProgressCount = serviceRequests.filter(req => req.status === 'in_progress').length;
+  const completedThisWeek = serviceRequests.filter(req => {
+    const isCompleted = req.status === 'completed';
+    const updatedDate = new Date(req.updated_at || req.created_at);
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    return isCompleted && updatedDate >= oneWeekAgo;
+  }).length;
+  
   return (
     <div className="space-y-6">
       <div className="bg-white shadow rounded-lg p-6">
@@ -77,6 +98,33 @@ function TechnicianDashboardContent() {
           </div>
         </div>
         
+        <div className="flex justify-end mb-4 space-x-2">
+          <Link 
+            href="/dashboard?sort=date&order=asc" 
+            className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            Date ↑
+          </Link>
+          <Link 
+            href="/dashboard?sort=date&order=desc" 
+            className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            Date ↓
+          </Link>
+          <Link 
+            href="/dashboard?sort=status&order=asc" 
+            className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            Status ↑
+          </Link>
+          <Link 
+            href="/dashboard?sort=customer&order=asc" 
+            className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            Customer ↑
+          </Link>
+        </div>
+        
         <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
           <table className="min-w-full divide-y divide-gray-300">
             <thead className="bg-gray-50">
@@ -92,22 +140,39 @@ function TechnicianDashboardContent() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
-              {/* Table rows will be populated by loading service requests */}
-              <tr>
-                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">#2</td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">Nur Aiman Zaharin Bin Rahimy</td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">Refrigerant Recharge</td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">24/04/2025 at morning</td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                    Pending
-                  </span>
-                </td>
-                <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                  <a href="/dashboard/service-request/2" className="text-blue-600 hover:text-blue-900 mr-4">View</a>
-                  <a href="/dashboard/service-request/2/update" className="text-indigo-600 hover:text-indigo-900">Update</a>
-                </td>
-              </tr>
+              {serviceRequests.length > 0 ? (
+                serviceRequests.map((request) => (
+                  <tr key={request.id}>
+                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">#{request.id}</td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{request.user_name}</td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{request.service_name}</td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      {request.preferred_date} {request.preferred_time && `at ${request.preferred_time}`}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        request.status === 'completed' 
+                          ? 'bg-green-100 text-green-800' 
+                          : request.status === 'in_progress' 
+                          ? 'bg-blue-100 text-blue-800' 
+                          : request.status === 'cancelled'
+                          ? 'bg-gray-100 text-gray-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {request.status.charAt(0).toUpperCase() + request.status.slice(1).replace('_', ' ')}
+                      </span>
+                    </td>
+                    <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                      <a href={`/dashboard/service-request/${request.id}`} className="text-blue-600 hover:text-blue-900 mr-4">View</a>
+                      <a href={`/dashboard/service-request/${request.id}/update`} className="text-indigo-600 hover:text-indigo-900">Update</a>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="px-3 py-4 text-sm text-gray-500 text-center">No service requests found</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -126,7 +191,7 @@ function TechnicianDashboardContent() {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Pending Requests</dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">1</div>
+                    <div className="text-2xl font-semibold text-gray-900">{pendingCount}</div>
                   </dd>
                 </dl>
               </div>
@@ -146,7 +211,7 @@ function TechnicianDashboardContent() {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">In Progress</dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">0</div>
+                    <div className="text-2xl font-semibold text-gray-900">{inProgressCount}</div>
                   </dd>
                 </dl>
               </div>
@@ -166,7 +231,7 @@ function TechnicianDashboardContent() {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Completed This Week</dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">0</div>
+                    <div className="text-2xl font-semibold text-gray-900">{completedThisWeek}</div>
                   </dd>
                 </dl>
               </div>
@@ -179,7 +244,10 @@ function TechnicianDashboardContent() {
 }
 
 // Content for regular user dashboard
-function RegularUserDashboardContent({ user, subscription }: { user: any, subscription: any }) {
+function RegularUserDashboardContent({ user, subscription, serviceRequests }: { user: any, subscription: any, serviceRequests: any[] }) {
+  // Take only the 3 most recent service requests
+  const recentRequests = serviceRequests.slice(0, 3);
+  
   return (
     <div className="space-y-6">
       {/* Subscription Status */}
@@ -240,14 +308,41 @@ function RegularUserDashboardContent({ user, subscription }: { user: any, subscr
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
-              <tr>
-                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                  No recent service requests
-                </td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500"></td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500"></td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500"></td>
-              </tr>
+              {recentRequests.length > 0 ? (
+                recentRequests.map((request: any) => (
+                  <tr key={request.id}>
+                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                      {request.service_name}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      {format(new Date(request.preferred_date), 'MM/dd/yyyy')}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        request.status === 'completed' 
+                          ? 'bg-green-100 text-green-800' 
+                          : request.status === 'in_progress' 
+                          ? 'bg-blue-100 text-blue-800' 
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {request.status === 'in_progress' ? 'In Progress' : request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                      <a href={`/dashboard/service-request/${request.id}`} className="text-blue-600 hover:text-blue-900">View</a>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                    No recent service requests
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500"></td>
+                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500"></td>
+                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500"></td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

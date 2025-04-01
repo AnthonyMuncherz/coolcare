@@ -6,6 +6,8 @@ export interface TechnicianServiceRequest {
   id: number;
   user_id: number;
   user_name: string;
+  email: string;
+  phone?: string;
   service_id: number;
   service_name: string;
   description: string;
@@ -217,6 +219,40 @@ export async function updateMaintenanceStatus(
       success: false,
       message: 'Failed to update maintenance schedule'
     };
+  } finally {
+    await closeDb(db);
+  }
+}
+
+// Get all service requests with sorting options
+export async function getAllServiceRequests(sortBy: string = 'date', sortOrder: string = 'asc'): Promise<TechnicianServiceRequest[]> {
+  const db = await getDb();
+  
+  // Define valid sort columns and default to preferred_date if invalid
+  const validSortColumns = {
+    'date': 'sr.preferred_date',
+    'status': 'sr.status',
+    'customer': 'u.name',
+    'service': 's.name',
+    'id': 'sr.id'
+  };
+  
+  const sortColumn = validSortColumns[sortBy as keyof typeof validSortColumns] || 'sr.preferred_date';
+  const order = sortOrder.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
+  
+  try {
+    const requests = await db.all(`
+      SELECT sr.*, s.name as service_name, u.name as user_name, u.email, u.phone
+      FROM service_requests sr
+      JOIN services s ON sr.service_id = s.id
+      JOIN users u ON sr.user_id = u.id
+      ORDER BY ${sortColumn} ${order}, sr.id ASC
+    `);
+    
+    return requests;
+  } catch (error) {
+    console.error('Error getting all service requests:', error);
+    return [];
   } finally {
     await closeDb(db);
   }
