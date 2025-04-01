@@ -45,7 +45,7 @@ export default function Header() {
             Contact
           </Link>
         </div>
-        <div className="hidden lg:flex lg:items-center lg:gap-x-5">
+        <div className="hidden lg:flex lg:items-center lg:gap-x-5 lg:justify-end lg:flex-1">
           <Link href="/login" className="text-sm font-semibold leading-6 text-gray-900 hover:text-blue-600">
             Log in
           </Link>
