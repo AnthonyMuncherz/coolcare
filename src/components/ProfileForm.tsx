@@ -88,7 +88,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
             value={formData.name}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-black"
           />
         </div>
         
@@ -102,7 +102,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
             id="email"
             value={formData.email}
             disabled
-            className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm sm:text-sm text-gray-700"
           />
           <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
         </div>
@@ -118,7 +118,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
             value={formData.phone}
             onChange={handleChange}
             placeholder="+60 1X-XXX XXXX"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-black"
           />
         </div>
         
@@ -132,7 +132,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
             rows={3}
             value={formData.address}
             onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-black"
           />
         </div>
       </div>
