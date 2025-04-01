@@ -5,14 +5,16 @@ import { useState } from "react";
 interface UpdateServiceRequestFormProps {
   requestId: number;
   currentStatus: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  currentNotes?: string;
 }
 
 export default function UpdateServiceRequestForm({ 
   requestId, 
-  currentStatus 
+  currentStatus,
+  currentNotes = ''
 }: UpdateServiceRequestFormProps) {
   const [status, setStatus] = useState<'pending' | 'in_progress' | 'completed' | 'cancelled'>(currentStatus);
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState(currentNotes);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 

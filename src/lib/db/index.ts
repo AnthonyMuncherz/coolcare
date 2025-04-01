@@ -45,11 +45,24 @@ async function initializeDb(db: any) {
         const hasPreferredDate = columns.some((c: {name: string}) => c.name === 'preferred_date');
         const hasPreferredTime = columns.some((c: {name: string}) => c.name === 'preferred_time');
         const hasAddress = columns.some((c: {name: string}) => c.name === 'address');
+        const hasTechnicianNotes = columns.some((c: {name: string}) => c.name === 'technician_notes');
+        const hasUpdatedAt = columns.some((c: {name: string}) => c.name === 'updated_at');
         
         if (!hasUserId || !hasDescription || !hasPreferredDate || !hasPreferredTime || !hasAddress) {
           // Drop the table if it has the incorrect schema
           console.log('Dropping outdated service_requests table');
           await db.exec(`DROP TABLE service_requests`);
+        } else {
+          // Add missing columns if they don't exist
+          if (!hasTechnicianNotes) {
+            console.log('Adding technician_notes column to service_requests table');
+            await db.exec(`ALTER TABLE service_requests ADD COLUMN technician_notes TEXT`);
+          }
+          
+          if (!hasUpdatedAt) {
+            console.log('Adding updated_at column to service_requests table');
+            await db.exec(`ALTER TABLE service_requests ADD COLUMN updated_at TEXT DEFAULT CURRENT_TIMESTAMP`);
+          }
         }
       }
       
@@ -62,6 +75,17 @@ async function initializeDb(db: any) {
           console.log('Dropping plans and plan_features tables to fix pricing');
           await db.exec(`DROP TABLE IF EXISTS plan_features`);
           await db.exec(`DROP TABLE IF EXISTS plans`);
+        }
+      }
+      
+      // Check if maintenance_schedules table has the updated_at column
+      if (table.name === 'maintenance_schedules') {
+        const columns = await db.all(`PRAGMA table_info(maintenance_schedules)`);
+        const hasUpdatedAt = columns.some((c: {name: string}) => c.name === 'updated_at');
+        
+        if (!hasUpdatedAt) {
+          console.log('Adding updated_at column to maintenance_schedules table');
+          await db.exec(`ALTER TABLE maintenance_schedules ADD COLUMN updated_at TEXT DEFAULT CURRENT_TIMESTAMP`);
         }
       }
     }
@@ -109,6 +133,11 @@ async function initializeDb(db: any) {
       short_description TEXT NOT NULL,
       icon TEXT NOT NULL,
       price_from INTEGER NOT NULL,
+      slug TEXT,
+      longDescription TEXT,
+      price INTEGER,
+      imageUrl TEXT,
+      featured BOOLEAN DEFAULT 0,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     );

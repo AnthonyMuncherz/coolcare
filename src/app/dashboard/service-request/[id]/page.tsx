@@ -9,18 +9,25 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import CancelServiceRequestButton from '@/components/CancelServiceRequestButton';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Service Request Details - CoolCare',
   description: 'View service request details',
 };
 
-export default async function ServiceRequestDetailPage({ params }: { params: { id: string } }) {
+interface ServiceRequestDetailPageProps {
+  params: { id: string };
+}
+
+export default async function ServiceRequestDetailPage({ params }: ServiceRequestDetailPageProps) {
   // Check if user is authenticated
   const user = await requireAuth();
   
-  // Get service request details - properly parse ID
-  const id = params.id;
-  const requestId = parseInt(id);
+  // Process params after an async operation
+  const resolvedParams = await Promise.resolve(params);
+  const id = resolvedParams.id;
+  const requestId = parseInt(id, 10);
   
   if (isNaN(requestId)) {
     return notFound();
@@ -124,17 +131,19 @@ export default async function ServiceRequestDetailPage({ params }: { params: { i
                           {serviceRequest.description || 'No description provided'}
                         </dd>
                       </div>
-                      {serviceRequest.technician_notes && (
-                        <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                          <dt className="text-sm font-medium text-gray-500">
-                            Technician Notes
-                          </dt>
-                          <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                            {serviceRequest.technician_notes}
-                          </dd>
-                        </div>
-                      )}
-                      <div className={`${serviceRequest.technician_notes ? 'bg-gray-50' : 'bg-white'} px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}>
+                      <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt className="text-sm font-medium text-gray-500">
+                          Technician Notes
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                          {serviceRequest.technician_notes ? (
+                            serviceRequest.technician_notes
+                          ) : (
+                            <span className="text-gray-400">No technician notes available</span>
+                          )}
+                        </dd>
+                      </div>
+                      <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                         <dt className="text-sm font-medium text-gray-500">
                           Request Date
                         </dt>
