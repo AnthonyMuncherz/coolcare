@@ -85,9 +85,12 @@ export default async function ServiceRequestsPage() {
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              <button className="text-blue-600 hover:text-blue-900">
+                              <Link 
+                                href={`/dashboard/service-request/${request.id}`} 
+                                className="text-blue-600 hover:text-blue-900"
+                              >
                                 View
-                              </button>
+                              </Link>
                             </td>
                           </tr>
                         ))}

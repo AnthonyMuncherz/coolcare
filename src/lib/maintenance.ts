@@ -31,14 +31,28 @@ export async function getMaintenanceSchedules(userId: number): Promise<Maintenan
       return [];
     }
     
-    const schedules = await db.all(`
-      SELECT * 
-      FROM maintenance_schedules
-      WHERE user_id = ?
-      ORDER BY scheduled_date DESC
-    `, userId);
-    
-    return schedules || [];
+    // Check if the table has the expected user_id column
+    try {
+      const columnInfo = await db.all(`PRAGMA table_info(maintenance_schedules)`);
+      const hasUserIdColumn = columnInfo.some((col: any) => col.name === 'user_id');
+      
+      if (!hasUserIdColumn) {
+        console.log('Maintenance schedules table does not have user_id column yet');
+        return [];
+      }
+      
+      const schedules = await db.all(`
+        SELECT * 
+        FROM maintenance_schedules
+        WHERE user_id = ?
+        ORDER BY scheduled_date DESC
+      `, userId);
+      
+      return schedules || [];
+    } catch (error) {
+      console.error('Error checking maintenance_schedules schema:', error);
+      return [];
+    }
   } catch (error) {
     console.error('Error getting maintenance schedules:', error);
     return [];

@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import Link from 'next/link';
+import CancelSubscriptionButton from '@/components/CancelSubscriptionButton';
 
 export const metadata: Metadata = {
   title: 'Subscription - CoolCare',
@@ -76,7 +77,7 @@ export default async function SubscriptionPage() {
                             Billing cycle
                           </dt>
                           <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                            {subscription.billingCycle}
+                            {subscription.billing_cycle === 'monthly' ? 'Monthly' : 'Yearly'}
                           </dd>
                         </div>
                         <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -121,6 +122,12 @@ export default async function SubscriptionPage() {
                           </dd>
                         </div>
                       </dl>
+                    </div>
+                    {/* Cancel Subscription Button */}
+                    <div className="px-4 py-5 sm:px-6 border-t border-gray-200">
+                      <div className="flex justify-end">
+                        <CancelSubscriptionButton subscriptionId={subscription.id} />
+                      </div>
                     </div>
                   </div>
                 ) : (

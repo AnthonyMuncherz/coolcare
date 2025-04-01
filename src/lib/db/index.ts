@@ -74,57 +74,69 @@ async function initializeDb(db: any) {
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      email TEXT UNIQUE NOT NULL,
+      email TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL,
       phone TEXT,
       address TEXT,
-      role TEXT NOT NULL DEFAULT 'customer',
+      role TEXT DEFAULT 'user',
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS services (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      slug TEXT NOT NULL UNIQUE,
-      description TEXT,
-      longDescription TEXT,
-      price REAL,
-      imageUrl TEXT,
-      featured BOOLEAN DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS plans (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      price REAL NOT NULL,
+      description TEXT NOT NULL,
+      price INTEGER NOT NULL,
       billing_cycle TEXT NOT NULL,
-      description TEXT,
-      features TEXT,
-      isPopular BOOLEAN DEFAULT 0
+      popular BOOLEAN NOT NULL DEFAULT 0,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS plan_features (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      plan_id INTEGER NOT NULL,
+      feature TEXT NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (plan_id) REFERENCES plans (id)
+    );
+
+    CREATE TABLE IF NOT EXISTS services (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      description TEXT NOT NULL,
+      short_description TEXT NOT NULL,
+      icon TEXT NOT NULL,
+      price_from INTEGER NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS locations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT,
-      address TEXT,
-      latitude REAL,
-      longitude REAL,
-      phone TEXT,
-      email TEXT,
-      businessHours TEXT,
-      isHeadOffice BOOLEAN DEFAULT 0
+      name TEXT NOT NULL,
+      address TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      email TEXT NOT NULL,
+      business_hours TEXT NOT NULL,
+      latitude REAL NOT NULL,
+      longitude REAL NOT NULL,
+      is_head_office BOOLEAN NOT NULL DEFAULT 0,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
     
     CREATE TABLE IF NOT EXISTS subscriptions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
       plan_id INTEGER NOT NULL,
-      start_date TEXT DEFAULT CURRENT_TIMESTAMP,
-      end_date TEXT,
       status TEXT NOT NULL DEFAULT 'active',
-      payment_method TEXT,
+      payment_method TEXT NOT NULL,
+      start_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      end_date TEXT NOT NULL,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users (id),
       FOREIGN KEY (plan_id) REFERENCES plans (id)
     );
@@ -133,12 +145,14 @@ async function initializeDb(db: any) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
       service_id INTEGER NOT NULL,
-      description TEXT,
-      preferred_date TEXT,
+      description TEXT NOT NULL,
+      preferred_date TEXT NOT NULL,
       preferred_time TEXT,
       address TEXT,
       status TEXT NOT NULL DEFAULT 'pending',
+      technician_notes TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users (id),
       FOREIGN KEY (service_id) REFERENCES services (id)
     );
@@ -148,10 +162,12 @@ async function initializeDb(db: any) {
       user_id INTEGER NOT NULL,
       subscription_id INTEGER NOT NULL,
       scheduled_date TEXT NOT NULL,
+      scheduled_time TEXT,
       status TEXT NOT NULL DEFAULT 'scheduled',
       technician_name TEXT,
       notes TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users (id),
       FOREIGN KEY (subscription_id) REFERENCES subscriptions (id)
     );

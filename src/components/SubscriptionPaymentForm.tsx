@@ -48,6 +48,10 @@ export default function SubscriptionPaymentForm({ userId }: { userId: number }) 
       // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 2000));
       
+      // Get the selected plan and billing cycle
+      const selectedPlanId = (document.querySelector('input[name="plan"]:checked') as HTMLInputElement)?.value || 2;
+      const billingCycle = (document.querySelector('input[name="billingCycle"]') as HTMLInputElement)?.value || 'yearly';
+      
       // Simulate API call to create subscription
       const response = await fetch('/api/subscriptions', {
         method: 'POST',
@@ -56,8 +60,9 @@ export default function SubscriptionPaymentForm({ userId }: { userId: number }) 
         },
         body: JSON.stringify({
           userId,
-          planId: (document.querySelector('input[name="plan"]:checked') as HTMLInputElement)?.value || 2, // Default to standard plan if none selected
+          planId: selectedPlanId,
           paymentMethod: selectedMethod,
+          billingCycle: billingCycle
         }),
       });
       
