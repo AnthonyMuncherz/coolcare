@@ -2,10 +2,41 @@
 
 import Link from 'next/link';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    // Check if user is logged in
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setUser(data.user);
+          }
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [pathname]);
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -46,14 +77,24 @@ export default function Header() {
           </Link>
         </div>
         <div className="hidden lg:flex lg:items-center lg:gap-x-5 lg:justify-end lg:flex-1">
-          <Link href="/login" className="text-sm font-semibold leading-6 text-gray-900 hover:text-blue-600">
-            Log in
-          </Link>
+          {!loading && (
+            <>
+              {user ? (
+                <Link href="/dashboard" className="text-sm font-semibold leading-6 text-gray-900 hover:text-blue-600">
+                  Dashboard
+                </Link>
+              ) : (
+                <Link href="/login" className="text-sm font-semibold leading-6 text-gray-900 hover:text-blue-600">
+                  Log in
+                </Link>
+              )}
+            </>
+          )}
           <Link 
-            href="/signup" 
+            href={user ? "/dashboard/service-requests/new" : "/signup"} 
             className="rounded-md bg-blue-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
           >
-            Get started
+            {user ? "Request Service" : "Get started"}
           </Link>
         </div>
       </nav>
@@ -116,22 +157,47 @@ export default function Header() {
                   >
                     Contact
                   </Link>
+                  {user && (
+                    <Link 
+                      href="/dashboard"
+                      className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                  )}
                 </div>
                 <div className="py-6">
-                  <Link
-                    href="/login"
-                    className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Log in
-                  </Link>
-                  <Link
-                    href="/signup"
-                    className="mt-2 block rounded-md bg-blue-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Get started
-                  </Link>
+                  {!loading && (
+                    <>
+                      {user ? (
+                        <Link
+                          href="/dashboard/service-requests/new"
+                          className="mt-2 block rounded-md bg-blue-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          Request Service
+                        </Link>
+                      ) : (
+                        <>
+                          <Link
+                            href="/login"
+                            className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            Log in
+                          </Link>
+                          <Link
+                            href="/signup"
+                            className="mt-2 block rounded-md bg-blue-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            Get started
+                          </Link>
+                        </>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             </div>
