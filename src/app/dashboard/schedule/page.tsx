@@ -23,12 +23,18 @@ export default async function SchedulePage() {
   const schedules: MaintenanceSchedule[] = subscription ? await getMaintenanceSchedules(user.id) : [];
   
   // Split schedules into upcoming and past
+  // Move all completed visits to past regardless of date
   const currentDate = new Date();
   const upcomingSchedules: MaintenanceSchedule[] = schedules.filter(
-    (schedule) => new Date(schedule.scheduled_date) >= currentDate
+    (schedule) => 
+      schedule.status !== 'completed' && 
+      new Date(schedule.scheduled_date) >= currentDate
   );
+  
   const pastSchedules: MaintenanceSchedule[] = schedules.filter(
-    (schedule) => new Date(schedule.scheduled_date) < currentDate
+    (schedule) => 
+      schedule.status === 'completed' || 
+      new Date(schedule.scheduled_date) < currentDate
   );
   
   return (

@@ -52,16 +52,16 @@ export default function DashboardSidebar({ user, activePage }: Props) {
     },
     {
       name: 'Maintenance Schedule',
-      href: '/dashboard/schedule',
+      href: user.role === 'technician' ? '/dashboard/maintenance-schedule' : '/dashboard/schedule',
       icon: CalendarIcon,
-      id: 'schedule',
+      id: user.role === 'technician' ? 'maintenance-schedule' : 'schedule',
     },
-    {
+    ...(user.role !== 'technician' ? [{
       name: 'Subscription',
       href: '/dashboard/subscription',
       icon: CreditCardIcon,
       id: 'subscription',
-    },
+    }] : []),
     {
       name: 'Profile',
       href: '/dashboard/profile',

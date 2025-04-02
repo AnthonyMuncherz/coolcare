@@ -1,19 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-interface UpdateServiceRequestFormProps {
-  requestId: number;
-  currentStatus: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+interface UpdateMaintenanceFormProps {
+  maintenanceId: number;
+  currentStatus: 'scheduled' | 'completed' | 'cancelled';
   currentNotes?: string;
 }
 
-export default function UpdateServiceRequestForm({ 
-  requestId, 
+export default function UpdateMaintenanceForm({ 
+  maintenanceId, 
   currentStatus,
   currentNotes = ''
-}: UpdateServiceRequestFormProps) {
-  const [status, setStatus] = useState<'pending' | 'in_progress' | 'completed' | 'cancelled'>(currentStatus);
+}: UpdateMaintenanceFormProps) {
+  const router = useRouter();
+  const [status, setStatus] = useState<'scheduled' | 'completed' | 'cancelled'>(currentStatus);
   const [notes, setNotes] = useState(currentNotes);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -24,30 +26,32 @@ export default function UpdateServiceRequestForm({
     setMessage({ type: '', text: '' });
 
     try {
-      const formData = new FormData();
-      formData.append('requestId', requestId.toString());
-      formData.append('status', status);
-      formData.append('notes', notes);
-
-      const response = await fetch('/api/technician/update-service-request', {
+      const response = await fetch('/api/technician/update-maintenance', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          maintenanceId,
+          status,
+          notes
+        }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setMessage({ type: 'success', text: data.message });
-        // If updated successfully, we can redirect after a short delay
+        setMessage({ type: 'success', text: data.message || 'Maintenance visit updated successfully!' });
+        // If updated successfully, redirect after a short delay
         setTimeout(() => {
-          window.location.href = '/technician-dashboard';
+          router.push('/dashboard/maintenance-schedule');
         }, 2000);
       } else {
-        setMessage({ type: 'error', text: data.message || 'Failed to update service request' });
+        setMessage({ type: 'error', text: data.message || 'Failed to update maintenance visit' });
       }
     } catch (error) {
-      console.error('Error updating service request:', error);
-      setMessage({ type: 'error', text: 'An error occurred while updating the service request' });
+      console.error('Error updating maintenance visit:', error);
+      setMessage({ type: 'error', text: 'An error occurred while updating the maintenance visit' });
     } finally {
       setIsSubmitting(false);
     }
@@ -65,11 +69,10 @@ export default function UpdateServiceRequestForm({
             name="status"
             value={status}
             onChange={(e) => setStatus(e.target.value as any)}
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md text-black"
+            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
             required
           >
-            <option value="pending">Pending</option>
-            <option value="in_progress">In Progress</option>
+            <option value="scheduled">Scheduled</option>
             <option value="completed">Completed</option>
             <option value="cancelled">Cancelled</option>
           </select>
@@ -77,7 +80,7 @@ export default function UpdateServiceRequestForm({
 
         <div>
           <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
-            Technician Notes
+            Notes
           </label>
           <textarea
             id="notes"
@@ -85,8 +88,8 @@ export default function UpdateServiceRequestForm({
             rows={4}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-black"
-            placeholder="Add your notes about this service request"
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            placeholder="Add any notes about this maintenance visit"
           ></textarea>
         </div>
 
@@ -102,7 +105,7 @@ export default function UpdateServiceRequestForm({
             disabled={isSubmitting}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
           >
-            {isSubmitting ? 'Updating...' : 'Update Request'}
+            {isSubmitting ? 'Updating...' : 'Update Maintenance Visit'}
           </button>
         </div>
       </div>
