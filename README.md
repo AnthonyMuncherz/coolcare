@@ -19,16 +19,55 @@ CoolCare is a subscription-based air conditioning maintenance service based in M
 
 ## Getting Started
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
+### Prerequisites
+- [Node.js](https://nodejs.org/) (version 18.0.0 or higher)
+- [Git](https://git-scm.com/downloads)
+- A code editor (e.g., [Visual Studio Code](https://code.visualstudio.com/))
+
+### Installation (Windows)
+
+1. **Install the prerequisites** if you haven't already:
+   - Download and install Node.js from [https://nodejs.org/](https://nodejs.org/)
+   - Download and install Git from [https://git-scm.com/download/win](https://git-scm.com/download/win)
+
+2. **Clone the repository**:
+   - Open Command Prompt or PowerShell
+   - Navigate to the folder where you want to store the project
+   ```cmd
+   cd C:\path\to\your\projects\folder
+   ```
+   - Clone the repository
+   ```cmd
+   git clone https://github.com/username/coolcare.git
+   cd coolcare
+   ```
+
+3. **Install dependencies**:
+   ```cmd
    npm install
    ```
-3. Run the development server:
-   ```bash
+
+4. **Run the development server**:
+   ```cmd
    npm run dev
    ```
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+5. **Open the application** by navigating to [http://localhost:3000](http://localhost:3000) in your web browser
+
+### Troubleshooting on Windows
+
+- **Port already in use**: If port 3000 is already in use, you can specify a different port:
+  ```cmd
+  npm run dev -- -p 3001
+  ```
+
+- **Permission errors**: If you encounter permission errors, try running Command Prompt or PowerShell as Administrator.
+
+- **Node.js version issues**: Ensure you're using a compatible Node.js version by running:
+  ```cmd
+  node -v
+  ```
+  If needed, you can use [nvm-windows](https://github.com/coreybutler/nvm-windows) to install and manage multiple Node.js versions.
 
 ## Development
 
