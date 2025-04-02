@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { User } from "@/lib/auth";
 
 interface Subscription {
   id: number;
@@ -11,15 +12,23 @@ interface Subscription {
 }
 
 interface CreateMaintenanceFormProps {
-  subscriptions: Subscription[];
-  technicianName: string;
+  subscriptions?: Subscription[];
+  technicianName?: string;
+  customers?: User[];
+  technicians?: User[];
+  isAdminView?: boolean;
 }
 
 export default function CreateMaintenanceForm({ 
-  subscriptions,
-  technicianName
+  subscriptions = [],
+  technicianName = "",
+  customers = [],
+  technicians = [],
+  isAdminView = false
 }: CreateMaintenanceFormProps) {
   const [selectedSubscription, setSelectedSubscription] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState('');
+  const [selectedTechnician, setSelectedTechnician] = useState('');
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
   const [notes, setNotes] = useState('');
@@ -47,47 +56,93 @@ export default function CreateMaintenanceForm({
     return subscriptions.find(s => s.id === parseInt(selectedSubscription));
   };
   
+  // Find the selected customer from the list
+  const findSelectedCustomer = () => {
+    if (!selectedCustomer) return null;
+    return customers.find(c => c.id === parseInt(selectedCustomer));
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setMessage({ type: '', text: '' });
     
     try {
-      const subscription = findSelectedSubscription();
-      if (!subscription) {
-        setMessage({ type: 'error', text: 'Please select a subscription' });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      const formData = new FormData();
-      formData.append('subscriptionId', selectedSubscription);
-      formData.append('userId', subscription.user_id.toString());
-      formData.append('scheduledDate', scheduledDate);
-      formData.append('scheduledTime', scheduledTime);
-      formData.append('technicianName', technicianName);
-      formData.append('notes', notes);
-      
-      const response = await fetch('/api/technician/create-maintenance', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        setMessage({ type: 'success', text: data.message });
-        // Reset form after successful submission
-        setSelectedSubscription('');
-        setScheduledDate('');
-        setScheduledTime('');
-        setNotes('');
-        // Redirect after a short delay
-        setTimeout(() => {
-          window.location.href = '/technician-dashboard/maintenance';
-        }, 2000);
+      // For admin view, use selected customer and technician
+      if (isAdminView) {
+        if (!selectedCustomer) {
+          setMessage({ type: 'error', text: 'Please select a customer' });
+          setIsSubmitting(false);
+          return;
+        }
+        
+        const formData = new FormData();
+        formData.append('userId', selectedCustomer);
+        formData.append('scheduledDate', scheduledDate);
+        formData.append('scheduledTime', scheduledTime);
+        formData.append('technicianId', selectedTechnician || '');
+        formData.append('notes', notes);
+        
+        const response = await fetch('/api/admin/create-maintenance', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          setMessage({ type: 'success', text: data.message });
+          // Reset form after successful submission
+          setSelectedCustomer('');
+          setSelectedTechnician('');
+          setScheduledDate('');
+          setScheduledTime('');
+          setNotes('');
+          // Redirect after a short delay
+          setTimeout(() => {
+            window.location.href = '/admin-dashboard/maintenance';
+          }, 2000);
+        } else {
+          setMessage({ type: 'error', text: data.message || 'Failed to schedule maintenance' });
+        }
       } else {
-        setMessage({ type: 'error', text: data.message || 'Failed to schedule maintenance' });
+        // For technician view, use selected subscription
+        const subscription = findSelectedSubscription();
+        if (!subscription) {
+          setMessage({ type: 'error', text: 'Please select a subscription' });
+          setIsSubmitting(false);
+          return;
+        }
+        
+        const formData = new FormData();
+        formData.append('subscriptionId', selectedSubscription);
+        formData.append('userId', subscription.user_id.toString());
+        formData.append('scheduledDate', scheduledDate);
+        formData.append('scheduledTime', scheduledTime);
+        formData.append('technicianName', technicianName);
+        formData.append('notes', notes);
+        
+        const response = await fetch('/api/technician/create-maintenance', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          setMessage({ type: 'success', text: data.message });
+          // Reset form after successful submission
+          setSelectedSubscription('');
+          setScheduledDate('');
+          setScheduledTime('');
+          setNotes('');
+          // Redirect after a short delay
+          setTimeout(() => {
+            window.location.href = '/technician-dashboard/maintenance';
+          }, 2000);
+        } else {
+          setMessage({ type: 'error', text: data.message || 'Failed to schedule maintenance' });
+        }
       }
     } catch (error) {
       console.error('Error scheduling maintenance:', error);
@@ -99,45 +154,117 @@ export default function CreateMaintenanceForm({
   
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <label htmlFor="subscription" className="block text-sm font-medium text-gray-700">
-          Select Customer
-        </label>
-        <select
-          id="subscription"
-          name="subscription"
-          value={selectedSubscription}
-          onChange={(e) => setSelectedSubscription(e.target.value)}
-          className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-          required
-        >
-          <option value="">-- Select a customer --</option>
-          {subscriptions.map((subscription) => (
-            <option key={subscription.id} value={subscription.id}>
-              {subscription.user_name} - {subscription.plan_name} Plan
-            </option>
-          ))}
-        </select>
-      </div>
-      
-      {selectedSubscription && (
-        <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
-          <h4 className="text-sm font-medium text-gray-900 mb-2">Selected Customer Details</h4>
-          {(() => {
-            const subscription = findSelectedSubscription();
-            if (!subscription) return null;
-            
-            return (
-              <div className="text-sm text-gray-600 space-y-1">
-                <p><span className="font-medium">Name:</span> {subscription.user_name}</p>
-                <p><span className="font-medium">Plan:</span> {subscription.plan_name}</p>
-                {subscription.address && (
-                  <p><span className="font-medium">Address:</span> {subscription.address}</p>
-                )}
-              </div>
-            );
-          })()}
-        </div>
+      {isAdminView ? (
+        // Admin view - select customer and technician
+        <>
+          <div>
+            <label htmlFor="customer" className="block text-sm font-medium text-gray-700">
+              Select Customer
+            </label>
+            <select
+              id="customer"
+              name="customer"
+              value={selectedCustomer}
+              onChange={(e) => setSelectedCustomer(e.target.value)}
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+              required
+            >
+              <option value="">-- Select a customer --</option>
+              {customers.map((customer) => (
+                <option key={customer.id} value={customer.id}>
+                  {customer.name} - {customer.email}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div>
+            <label htmlFor="technician" className="block text-sm font-medium text-gray-700">
+              Assign Technician (optional)
+            </label>
+            <select
+              id="technician"
+              name="technician"
+              value={selectedTechnician}
+              onChange={(e) => setSelectedTechnician(e.target.value)}
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+            >
+              <option value="">-- Assign later --</option>
+              {technicians.map((technician) => (
+                <option key={technician.id} value={technician.id}>
+                  {technician.name} - {technician.email}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          {selectedCustomer && (
+            <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
+              <h4 className="text-sm font-medium text-gray-900 mb-2">Selected Customer Details</h4>
+              {(() => {
+                const customer = findSelectedCustomer();
+                if (!customer) return null;
+                
+                return (
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <p><span className="font-medium">Name:</span> {customer.name}</p>
+                    <p><span className="font-medium">Email:</span> {customer.email}</p>
+                    {customer.phone && (
+                      <p><span className="font-medium">Phone:</span> {customer.phone}</p>
+                    )}
+                    {customer.address && (
+                      <p><span className="font-medium">Address:</span> {customer.address}</p>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+        </>
+      ) : (
+        // Technician view - select subscription
+        <>
+          <div>
+            <label htmlFor="subscription" className="block text-sm font-medium text-gray-700">
+              Select Customer
+            </label>
+            <select
+              id="subscription"
+              name="subscription"
+              value={selectedSubscription}
+              onChange={(e) => setSelectedSubscription(e.target.value)}
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+              required
+            >
+              <option value="">-- Select a customer --</option>
+              {subscriptions.map((subscription) => (
+                <option key={subscription.id} value={subscription.id}>
+                  {subscription.user_name} - {subscription.plan_name} Plan
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          {selectedSubscription && (
+            <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
+              <h4 className="text-sm font-medium text-gray-900 mb-2">Selected Customer Details</h4>
+              {(() => {
+                const subscription = findSelectedSubscription();
+                if (!subscription) return null;
+                
+                return (
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <p><span className="font-medium">Name:</span> {subscription.user_name}</p>
+                    <p><span className="font-medium">Plan:</span> {subscription.plan_name}</p>
+                    {subscription.address && (
+                      <p><span className="font-medium">Address:</span> {subscription.address}</p>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+        </>
       )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

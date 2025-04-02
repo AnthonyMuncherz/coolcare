@@ -8,7 +8,9 @@ import {
   CalendarIcon, 
   CreditCardIcon, 
   UserCircleIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  Cog6ToothIcon,
+  UserGroupIcon
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 
@@ -68,6 +70,20 @@ export default function DashboardSidebar({ user, activePage }: Props) {
       icon: UserCircleIcon,
       id: 'profile',
     },
+    // Admin Dashboard link for admin users
+    ...(user.role === 'admin' ? [{
+      name: 'Admin Dashboard',
+      href: '/admin-dashboard',
+      icon: Cog6ToothIcon,
+      id: 'admin-dashboard',
+    }] : []),
+    // User Management link for admin users (direct link to the user management section)
+    ...(user.role === 'admin' ? [{
+      name: 'User Management',
+      href: '/admin-dashboard#user-management',
+      icon: UserGroupIcon,
+      id: 'user-management',
+    }] : []),
   ];
   
   return (
@@ -78,6 +94,17 @@ export default function DashboardSidebar({ user, activePage }: Props) {
           <div className="ml-3">
             <p className="text-sm font-medium text-gray-900">{user.name}</p>
             <p className="text-xs text-gray-500">{user.email}</p>
+            <p className="text-xs text-gray-500 mt-1">
+              <span className={`px-2 py-0.5 rounded-full text-xs ${
+                user.role === 'admin' 
+                  ? 'bg-purple-100 text-purple-800' 
+                  : user.role === 'technician' 
+                  ? 'bg-blue-100 text-blue-800' 
+                  : 'bg-green-100 text-green-800'
+              }`}>
+                {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+              </span>
+            </p>
           </div>
         </div>
       </div>

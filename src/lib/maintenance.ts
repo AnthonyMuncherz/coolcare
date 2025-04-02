@@ -8,10 +8,52 @@ export interface MaintenanceSchedule {
   subscription_id: number;
   scheduled_date: string;
   scheduled_time?: string;
-  status: 'scheduled' | 'completed' | 'cancelled';
+  status: 'scheduled' | 'completed' | 'cancelled' | 'in_progress';
+  technician_id?: number;
   technician_name?: string;
+  customer_name?: string;
+  maintenance_type?: string;
   notes?: string;
   created_at: string;
+}
+
+// Get all maintenance schedules for admin dashboard
+export async function getAllMaintenanceVisits(): Promise<MaintenanceSchedule[]> {
+  const db = await getDb();
+  
+  try {
+    // Check if maintenance_schedules table exists
+    const tableInfo = await db.get(`
+      SELECT name 
+      FROM sqlite_master 
+      WHERE type='table' AND name='maintenance_schedules'
+    `);
+    
+    if (!tableInfo) {
+      console.log('Maintenance schedules table does not exist yet');
+      return [];
+    }
+    
+    // Get all maintenance schedules with user and technician information
+    const schedules = await db.all(`
+      SELECT ms.*, 
+             u.name as customer_name,
+             t.name as technician_name,
+             p.name as maintenance_type
+      FROM maintenance_schedules ms
+      LEFT JOIN users u ON ms.user_id = u.id
+      LEFT JOIN users t ON ms.technician_id = t.id
+      LEFT JOIN plans p ON ms.subscription_id = p.id
+      ORDER BY ms.scheduled_date DESC
+    `);
+    
+    return schedules || [];
+  } catch (error) {
+    console.error('Error getting all maintenance visits:', error);
+    return [];
+  } finally {
+    await closeDb(db);
+  }
 }
 
 // Get user's maintenance schedules
@@ -87,6 +129,7 @@ export async function createMaintenanceSchedule(data: {
   subscriptionId: number;
   scheduledDate: string;
   scheduledTime?: string;
+  technicianId?: number;
   notes?: string;
 }): Promise<{ success: boolean; message: string; id?: number }> {
   const db = await getDb();
@@ -94,13 +137,14 @@ export async function createMaintenanceSchedule(data: {
   try {
     const result = await db.run(`
       INSERT INTO maintenance_schedules (
-        user_id, subscription_id, scheduled_date, scheduled_time, status, notes
-      ) VALUES (?, ?, ?, ?, 'scheduled', ?)
+        user_id, subscription_id, scheduled_date, scheduled_time, status, technician_id, notes
+      ) VALUES (?, ?, ?, ?, 'scheduled', ?, ?)
     `, [
       data.userId,
       data.subscriptionId,
       data.scheduledDate,
       data.scheduledTime || null,
+      data.technicianId || null,
       data.notes || null
     ]);
     
@@ -123,7 +167,7 @@ export async function createMaintenanceSchedule(data: {
 // Update a maintenance schedule status
 export async function updateMaintenanceScheduleStatus(
   id: number, 
-  status: 'scheduled' | 'completed' | 'cancelled',
+  status: 'scheduled' | 'completed' | 'cancelled' | 'in_progress',
   technicianName?: string,
   notes?: string
 ): Promise<{ success: boolean; message: string }> {
