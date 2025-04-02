@@ -108,7 +108,7 @@ export default function NewMaintenanceVisitForm({
           name="subscriptionId"
           value={formData.subscriptionId}
           onChange={handleChange}
-          className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+          className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md text-black"
           required
         >
           <option value="">Select a customer</option>
@@ -143,7 +143,7 @@ export default function NewMaintenanceVisitForm({
           name="scheduledDate"
           value={formData.scheduledDate}
           onChange={handleChange}
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-black"
           required
         />
       </div>
@@ -158,7 +158,7 @@ export default function NewMaintenanceVisitForm({
           name="scheduledTime"
           value={formData.scheduledTime}
           onChange={handleChange}
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-black"
         />
       </div>
       
@@ -172,7 +172,7 @@ export default function NewMaintenanceVisitForm({
           rows={4}
           value={formData.notes}
           onChange={handleChange}
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-black"
           placeholder="Add any notes about this maintenance visit"
         ></textarea>
       </div>
