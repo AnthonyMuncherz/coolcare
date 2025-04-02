@@ -1,74 +1,52 @@
-import { NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/auth';
+import { NextRequest, NextResponse } from 'next/server';
 import { updateMaintenanceStatus } from '@/lib/technician';
+import { requireAuth } from '@/lib/auth';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    // Check if user is authenticated and is a technician
+    // Verify user is authenticated and is a technician
     const user = await requireAuth();
     
     if (user.role !== 'technician') {
       return NextResponse.json(
-        { success: false, message: 'Unauthorized' },
-        { status: 401 }
+        { message: 'Unauthorized access. Only technicians can update maintenance visits.' },
+        { status: 403 }
       );
     }
     
-    // Get form data
-    const formData = await request.formData();
-    const scheduleId = formData.get('scheduleId');
-    const status = formData.get('status');
-    const notes = formData.get('notes') || '';
+    // Parse request body
+    const data = await request.json();
     
-    // Validate inputs
-    if (!scheduleId || !status) {
+    // Validate required fields
+    if (!data.maintenanceId || !data.status) {
       return NextResponse.json(
-        { success: false, message: 'Schedule ID and status are required' },
+        { message: 'Missing required fields.' },
         { status: 400 }
       );
     }
     
-    // Parse scheduleId to number
-    const scheduleIdNum = parseInt(scheduleId.toString());
-    
-    if (isNaN(scheduleIdNum)) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid Schedule ID' },
-        { status: 400 }
-      );
-    }
-    
-    // Validate status
-    const validStatuses = ['scheduled', 'completed', 'cancelled'];
-    if (!validStatuses.includes(status.toString())) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid status value' },
-        { status: 400 }
-      );
-    }
-    
-    // Update maintenance status
+    // Update the maintenance status
     const result = await updateMaintenanceStatus(
-      scheduleIdNum,
-      status.toString() as 'scheduled' | 'completed' | 'cancelled',
-      notes.toString()
+      parseInt(data.maintenanceId, 10),
+      data.status,
+      data.notes
     );
     
     if (result.success) {
       return NextResponse.json(
-        { success: true, message: result.message },
+        { message: result.message || 'Maintenance visit updated successfully' },
         { status: 200 }
       );
     } else {
       return NextResponse.json(
-        { success: false, message: result.message },
-        { status: 400 }
+        { message: result.message || 'Failed to update maintenance visit' },
+        { status: 500 }
       );
     }
   } catch (error) {
-    console.error('Error updating maintenance status:', error);
+    console.error('Error updating maintenance visit:', error);
     return NextResponse.json(
-      { success: false, message: 'Failed to process request' },
+      { message: 'An error occurred while updating the maintenance visit' },
       { status: 500 }
     );
   }

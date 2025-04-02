@@ -92,7 +92,7 @@ async function TechnicianDashboardContent({ sortBy = 'date', sortOrder = 'asc' }
             </a>
             <a 
               href="/dashboard/maintenance-schedule/new" 
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-black bg-blue-600 hover:bg-blue-700"
             >
               Create Maintenance Visit
             </a>

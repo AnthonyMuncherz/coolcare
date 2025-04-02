@@ -256,4 +256,25 @@ export async function getAllServiceRequests(sortBy: string = 'date', sortOrder: 
   } finally {
     await closeDb(db);
   }
+}
+
+// Get maintenance schedule detail
+export async function getMaintenanceDetail(scheduleId: number): Promise<any> {
+  const db = await getDb();
+  
+  try {
+    const schedule = await db.get(`
+      SELECT ms.*, u.name as user_name, u.email, u.phone, u.address
+      FROM maintenance_schedules ms
+      JOIN users u ON ms.user_id = u.id
+      WHERE ms.id = ?
+    `, [scheduleId]);
+    
+    return schedule;
+  } catch (error) {
+    console.error('Error getting maintenance detail:', error);
+    return null;
+  } finally {
+    await closeDb(db);
+  }
 } 
