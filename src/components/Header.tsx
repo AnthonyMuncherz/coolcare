@@ -39,6 +39,17 @@ export default function Header() {
     checkAuth();
   }, [pathname]);
 
+  // Get the appropriate dashboard link based on user role
+  const getDashboardLink = () => {
+    if (!user) return '/dashboard';
+    
+    if (user.role === 'admin') {
+      return '/admin-dashboard';
+    } else {
+      return '/dashboard';
+    }
+  };
+
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8" aria-label="Global">
@@ -83,17 +94,27 @@ export default function Header() {
               {user ? (
                 <div className="flex items-center space-x-4">
                   <Link 
-                    href="/dashboard" 
+                    href={getDashboardLink()}
                     className="text-sm font-semibold leading-6 text-gray-900 hover:text-blue-600"
                   >
-                    Dashboard
+                    {user.role === 'admin' ? 'Admin Dashboard' : 'Dashboard'}
                   </Link>
-                  <Link 
-                    href="/request-service" 
-                    className="text-sm font-semibold leading-6 text-gray-900 hover:text-blue-600"
-                  >
-                    Request Service
-                  </Link>
+                  {user.role === 'admin' && (
+                    <Link 
+                      href="/admin-dashboard/user-management" 
+                      className="text-sm font-semibold leading-6 text-gray-900 hover:text-blue-600"
+                    >
+                      User Management
+                    </Link>
+                  )}
+                  {user.role !== 'admin' && (
+                    <Link 
+                      href="/request-service" 
+                      className="text-sm font-semibold leading-6 text-gray-900 hover:text-blue-600"
+                    >
+                      Request Service
+                    </Link>
+                  )}
                 </div>
               ) : (
                 <div className="flex items-center space-x-4">
@@ -170,11 +191,20 @@ export default function Header() {
                   </Link>
                   {user && (
                     <Link 
-                      href="/dashboard"
+                      href={getDashboardLink()}
                       className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      Dashboard
+                      {user.role === 'admin' ? 'Admin Dashboard' : 'Dashboard'}
+                    </Link>
+                  )}
+                  {user && user.role === 'admin' && (
+                    <Link 
+                      href="/admin-dashboard/user-management"
+                      className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      User Management
                     </Link>
                   )}
                 </div>
@@ -182,13 +212,15 @@ export default function Header() {
                   {!loading && (
                     <>
                       {user ? (
-                        <Link
-                          href="/dashboard/service-requests/new"
-                          className="mt-2 block rounded-md bg-blue-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          Request Service
-                        </Link>
+                        user.role !== 'admin' && (
+                          <Link
+                            href="/dashboard/service-requests/new"
+                            className="mt-2 block rounded-md bg-blue-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            Request Service
+                          </Link>
+                        )
                       ) : (
                         <>
                           <Link
