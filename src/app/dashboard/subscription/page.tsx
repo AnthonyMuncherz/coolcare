@@ -26,6 +26,11 @@ export default async function SubscriptionPage() {
   // Check if user is authenticated
   const user = await requireAuth();
   
+  // Redirect technician to their dashboard
+  if (user.role === 'technician') {
+    redirect('/technician-dashboard');
+  }
+
   // Get user subscription
   const subscription = await getUserSubscription(user.id);
   

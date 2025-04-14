@@ -1,14 +1,14 @@
-# CoolCare - Air Conditioning Maintenance Subscription
+# CoolCare - Subscription Penjagaan Air-Cond
 
-CoolCare is a subscription-based air conditioning maintenance service based in Malaysia. This web application provides customers with information about our services and allows them to subscribe to maintenance plans.
+CoolCare ni subscription service utk maintenance air-cond yg operate kat Malaysia. Web app ni bagi customer info pasal service kita dan boleh subscribe utk plan maintenance.
 
 ## Features
 
-- Modern, responsive landing page
-- Information about AC maintenance services
-- Subscription plans and pricing
-- Customer testimonials
-- SQLite3 database for storing customer data and service records
+- Landing page yg responsive & modern
+- Info pasal service maintenance air-cond
+- Plan subscription dgn pricing
+- Testimonial dr customer
+- Database SQLite3 utk simpan data customer & rekod service
 
 ## Tech Stack
 
@@ -19,88 +19,109 @@ CoolCare is a subscription-based air conditioning maintenance service based in M
 
 ## Getting Started
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) (version 18.0.0 or higher)
+### Keperluan Basic
+- [Node.js](https://nodejs.org/) (version 18.0.0 or lebih tinggi)
 - [Git](https://git-scm.com/downloads)
-- A code editor (e.g., [Visual Studio Code](https://code.visualstudio.com/))
+- Code editor (cmth [Visual Studio Code](https://code.visualstudio.com/))
 
-### Installation (Windows)
+### Cara Install (Windows)
 
-1. **Install the prerequisites** if you haven't already:
-   - Download and install Node.js from [https://nodejs.org/](https://nodejs.org/)
-   - Download and install Git from [https://git-scm.com/download/win](https://git-scm.com/download/win)
+1. **Install semua keperluan basic dulu**:
+   - Download & install Node.js dari [https://nodejs.org/](https://nodejs.org/) (pilih je version LTS)
+   - Download & install Git dari [https://git-scm.com/download/win](https://git-scm.com/download/win)
+   - Install Visual Studio Code dari [https://code.visualstudio.com/](https://code.visualstudio.com/)
 
-2. **Clone the repository**:
-   - Open Command Prompt or PowerShell
-   - Navigate to the folder where you want to store the project
+2. **Buat folder utk project**:
+   - Buka File Explorer
+   - Pergi ke lokasi yg ko nak letak project ni (cmth: Documents atau Desktop)
+   - Right-click, pilih "New" > "Folder"
+   - Bagi nama folder tu (cmth: "FYP-Project")
+
+3. **Clone repository**:
+   - Tekan Windows key + R, type "cmd" dan tekan Enter utk buka Command Prompt
+   - Pergi ke folder yg ko dah buat tadi:
    ```cmd
-   cd C:\path\to\your\projects\folder
+   cd C:\Users\YourUsername\Documents\FYP-Project
    ```
-   - Clone the repository
+   (Tukar path tu ikut mana ko letak folder)
+   - Clone repo:
    ```cmd
    git clone https://github.com/username/coolcare.git
    cd coolcare
    ```
 
-3. **Install dependencies**:
+4. **Install dependencies**:
    ```cmd
    npm install
    ```
+   (Tunggu sampai siap, mmg ambik masa sikit)
 
-4. **Run the development server**:
+5. **Setup database**:
+   - Pastikan folder `src/lib/db` dah ada (kalau xde, buat folder tu)
+   - Kalau ada file setup utk DB, run command yg disediakan
+
+6. **Run development server**:
    ```cmd
    npm run dev
    ```
 
-5. **Open the application** by navigating to [http://localhost:3000](http://localhost:3000) in your web browser
+7. **Buka app** dgn access [http://localhost:3000](http://localhost:3000) kat browser
 
-### Troubleshooting on Windows
+### Troubleshooting kat Windows
 
-- **Port already in use**: If port 3000 is already in use, you can specify a different port:
+- **Port 3000 dah digunakan**: Kalau port tu dah guna, boleh try port lain:
   ```cmd
   npm run dev -- -p 3001
   ```
 
-- **Permission errors**: If you encounter permission errors, try running Command Prompt or PowerShell as Administrator.
+- **Error permission**: Kalau ada error pasal permission, try run Command Prompt sbg Administrator:
+  - Tekan Start, cari "Command Prompt"
+  - Right-click, pilih "Run as administrator"
+  - Lepas tu navigate balik ke folder project ko
 
-- **Node.js version issues**: Ensure you're using a compatible Node.js version by running:
+- **Masalah version Node.js**: Check version ko dgn:
   ```cmd
   node -v
   ```
-  If needed, you can use [nvm-windows](https://github.com/coreybutler/nvm-windows) to install and manage multiple Node.js versions.
+  Kalau version xsesuai, boleh guna [nvm-windows](https://github.com/coreybutler/nvm-windows) utk install & manage byk version Node.js.
+
+- **Error "cannot be loaded because running scripts is disabled"**: Buka PowerShell sbg admin dan run:
+  ```powershell
+  Set-ExecutionPolicy RemoteSigned
+  ```
 
 ## Development
 
-The project structure follows the Next.js App Router pattern:
+Structure project follow pattern Next.js App Router:
 
-- `src/app`: Contains the main page components and routes
-- `src/components`: Reusable UI components
-- `src/lib/db`: Database utilities for SQLite3
+- `src/app`: Main page components & routes
+- `src/components`: UI components yg reusable
+- `src/lib/db`: Utilities DB utk SQLite3
 
-## Project Status
+## Status Project
 
-This project is currently in development. The landing page is complete, and we are working on the following features:
+Project ni msh dalam development. Landing page dah siap, dan kita tgh keje kat features ni:
 
 - User authentication
-- Subscription management
-- Service request system
-- Admin dashboard for managing maintenance schedules
+- Management subscription
+- System request service
+- Dashboard admin utk manage schedule maintenance
 
 ## License
 
-This project is licensed under the MIT License.
+Project ni di-license bwh MIT License.
 
-## Learn More
+## Nak Tau Lebih
 
-To learn more about Next.js, take a look at the following resources:
+Utk tau lbh ttg Next.js, check resources ni:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [Next.js Documentation](https://nextjs.org/docs) - blajar features & API Next.js
+- [Learn Next.js](https://nextjs.org/learn) - tutorial Next.js yg interactive
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Boleh check [GitHub repository Next.js](https://github.com/vercel/next.js) - feedback & contributions dialu-alukan!
 
-## Deploy on Vercel
+## Deploy kat Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Cara paling senang utk deploy app Next.js adalah guna [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) dr creators Next.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Check [dokumentasi deployment Next.js](https://nextjs.org/docs/app/building-your-application/deploying) utk details lbh lanjut.
