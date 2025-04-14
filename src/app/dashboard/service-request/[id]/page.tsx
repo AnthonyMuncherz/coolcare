@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { redirect, notFound } from 'next/navigation';
 import { requireAuth } from '@/lib/auth';
 import { getServiceRequestById } from '@/lib/service-requests';
+import { getServiceRequestDetail } from '@/lib/technician';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import DashboardSidebar from '@/components/DashboardSidebar';
@@ -33,9 +34,15 @@ export default async function ServiceRequestDetailPage({ params }: ServiceReques
     return notFound();
   }
   
-  const serviceRequest = await getServiceRequestById(requestId, user.id);
+  // Fetch service request based on user role
+  let serviceRequest: any; // Use 'any' or a more specific combined type
+  if (user.role === 'technician') {
+    serviceRequest = await getServiceRequestDetail(requestId);
+  } else {
+    serviceRequest = await getServiceRequestById(requestId, user.id);
+  }
   
-  // If service request doesn't exist or doesn't belong to this user
+  // If service request doesn't exist (or doesn't belong to this user for non-technicians)
   if (!serviceRequest) {
     return notFound();
   }
@@ -120,7 +127,9 @@ export default async function ServiceRequestDetailPage({ params }: ServiceReques
                           Service Address
                         </dt>
                         <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                          {serviceRequest.address || user.address || 'Not specified'}
+                          {user.role === 'technician' 
+                            ? (serviceRequest.address || serviceRequest.user_address || 'Not specified')
+                            : (serviceRequest.address || user.address || 'Not specified')}
                         </dd>
                       </div>
                       <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -155,9 +164,18 @@ export default async function ServiceRequestDetailPage({ params }: ServiceReques
                   </div>
                 </div>
                 
-                {/* Actions */}
+                {/* Actions: Show Update button for technicians */}
                 <div className="mt-6 flex justify-end space-x-4">
-                  {serviceRequest.status === 'pending' && (
+                  {user.role === 'technician' && (
+                    <Link 
+                      href={`/dashboard/service-request/${serviceRequest.id}/update`} 
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      Update Status
+                    </Link>
+                  )}
+                  {/* Keep existing Cancel button logic for regular users */}
+                  {user.role !== 'technician' && serviceRequest.status === 'pending' && (
                     <CancelServiceRequestButton requestId={serviceRequest.id} />
                   )}
                 </div>
