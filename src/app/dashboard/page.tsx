@@ -249,6 +249,17 @@ async function TechnicianDashboardContent({ sortBy = 'date', sortOrder = 'asc' }
   );
 }
 
+// Helper function to format date
+function formatDateString(dateString: string | Date) {
+  if (!dateString) return 'N/A'; // Handle null or undefined dates
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-MY', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
 // Content for regular user dashboard
 function RegularUserDashboardContent({ user, subscription, serviceRequests }: { user: any, subscription: any, serviceRequests: any[] }) {
   // Take only the 3 most recent service requests
@@ -264,10 +275,11 @@ function RegularUserDashboardContent({ user, subscription, serviceRequests }: { 
             <p className="text-sm text-gray-600 mb-1">
               You are currently subscribed to the <span className="font-medium">{subscription.plan_name}</span> plan.
             </p>
-            <p className="text-sm text-gray-600 mb-4">
-              Billing Cycle: <span className="font-medium">{subscription.billingCycle === 'monthly' ? 'Monthly' : 'Yearly'}</span> - 
-              ${subscription.price}/{subscription.billingCycle === 'monthly' ? 'month' : 'year'}
-            </p>
+            <div className="text-sm text-gray-600 mt-2">
+              Billing Cycle: <span className="font-medium">{subscription.billing_cycle === 'monthly' ? 'Monthly' : 'Yearly'}</span> - 
+              Expires on: <span className="font-medium">{formatDateString(subscription.end_date)}</span> | 
+              Next payment is <span className="font-medium">RM {subscription.price.toFixed(2)}</span>
+            </div>
             <div className="mt-2">
               <a
                 href="/dashboard/subscription"

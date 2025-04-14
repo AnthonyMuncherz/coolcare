@@ -47,8 +47,8 @@ export async function POST(request: Request) {
         ['cancelled', subscriptionId]
       );
       
-      // Redirect back to subscription page with success message
-      return NextResponse.redirect(new URL('/dashboard/subscription?cancelled=true', request.url));
+      // Return success response instead of redirecting
+      return NextResponse.json({ success: true }, { status: 200 });
     } catch (error) {
       console.error('Database error:', error);
       return NextResponse.json({
