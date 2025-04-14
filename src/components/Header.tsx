@@ -109,7 +109,7 @@ export default function Header() {
                   )}
                   {user.role !== 'admin' && (
                     <Link 
-                      href="/request-service" 
+                      href="/dashboard/service-request/new" 
                       className="text-sm font-semibold leading-6 text-gray-900 hover:text-blue-600"
                     >
                       Request Service

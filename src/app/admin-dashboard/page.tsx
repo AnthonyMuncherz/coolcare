@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { getAllUsers } from '@/lib/admin';
 import { getTechnicianServiceRequests } from '@/lib/technician';
 import UserManagement from '@/components/UserManagement';
+import LogoutButton from '@/components/LogoutButton';
 
 export const metadata: Metadata = {
   title: 'Admin Dashboard - CoolCare',
@@ -51,6 +52,13 @@ export default async function AdminDashboardPage() {
                   >
                     Create Maintenance Visit
                   </Link>
+                  <Link 
+                    href="/admin-dashboard/user-management"
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    User Management
+                  </Link>
+                  <LogoutButton />
                 </div>
               </div>
             </div>
