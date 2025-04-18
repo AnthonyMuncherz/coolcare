@@ -46,7 +46,7 @@ export default async function PricingPage() {
                   key={plan.id}
                   className={classNames(
                     plan.popular ? 'ring-2 ring-blue-600' : 'ring-1 ring-gray-200',
-                    'rounded-3xl p-8'
+                    'rounded-3xl p-8 flex flex-col'
                   )}
                 >
                   <h2 className="text-2xl font-bold text-gray-900">{plan.name}</h2>
@@ -55,7 +55,7 @@ export default async function PricingPage() {
                     <span className="text-4xl font-bold tracking-tight text-gray-900">RM{plan.price}</span>
                     <span className="text-sm font-semibold leading-6 text-gray-600">/{plan.billingCycle}</span>
                   </p>
-                  <ul role="list" className="mt-8 space-y-3 text-sm leading-6 text-gray-600">
+                  <ul role="list" className="mt-8 space-y-3 text-sm leading-6 text-gray-600 flex-grow">
                     {plan.features.map((feature, idx) => (
                       <li key={idx} className="flex gap-x-3">
                         <CheckIcon className="h-6 w-5 flex-none text-blue-600" aria-hidden="true" />
